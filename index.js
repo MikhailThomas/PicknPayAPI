@@ -5,13 +5,16 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const db = require('./config/dbconn');
 const {genSalt, hash} = require('bcrypt');
+const path = require('path');
 // Express app
 const app = express();
 // Express router
 const router = express.Router();
 // Configuration 
 const port = parseInt(process.env.Port) || 4000;
-app.use(router, cors(), express.json(), express.urlencoded({
+app.use(
+    express.static("public"),
+    router, cors(), express.json(), express.urlencoded({
     extended: true
 }));
 
@@ -19,6 +22,10 @@ app.listen(port, ()=> {
     console.log(`Server is running on port ${port}`);
 });
 
+// Home page
+router.get('/', (req, res)=> {
+    res.status(200).sendFile(path.join(__dirname, 'views', 'index.html'));
+})
 // User registration
 router.post('/register', bodyParser.json(), async (req, res)=> {
     const bd = req.body; 
@@ -71,7 +78,6 @@ router.post('/products', bodyParser.json(), (req, res)=> {
     INSERT INTO products(prodName, prodUrl, quantity, price, totalamount, dateCreated)
     VALUES(?, ?, ?, ?, ?, ?);
     `;
-    //
     db.query(strQry, 
         [bd.prodName, bd.prodUrl, bd.quantity, bd.price, bd.totalamount, bd.dateCreated],
         (err, results)=> {
